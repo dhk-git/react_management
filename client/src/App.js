@@ -7,6 +7,7 @@ import TableHead from '@material-ui/core/TableHead';
 import TableBody from '@material-ui/core/TableBody';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import { withStyles } from '@material-ui/core/styles';
 
 // const customers = [
@@ -40,11 +41,14 @@ const styles = theme => (
   {
     root: {
       width:'100%',
-      marginTop: theme.spacing.unit * 3,
+      marginTop: theme.spacing(3),
       overflowX:"auto"
     },
     table: {
       minWidth:1080
+    },
+    progress:{
+      margin:theme.spacing(2)
     }
   }
 )
@@ -52,10 +56,12 @@ const styles = theme => (
 class App extends Component{
 
   state={
-    customers:""
+    customers: "",
+    complated: 0
   }
 
   componentDidMount(){
+    this.timer = setInterval(this.progress, 20);
     this.callApi()
       .then(res => this.setState({customers:res}))
       .catch(err => console.log(err));
@@ -67,12 +73,18 @@ class App extends Component{
     return body;
   }
 
+  progress = () => {
+    const { complated } = this.state;
+    this.setState({ complated: complated >= 100 ? 0 : complated + 1 });
+
+  }
+
   render(){
     const { classes } = this.props;
     return(
-      <Paper className={ classes.root }>
-        <Table className={ classes.table }>
-            <TableHead>
+      <Paper className={classes.root}>
+        <Table className={classes.table}>
+          <TableHead>
               <TableRow>
                 <TableCell>
                   번호
@@ -97,7 +109,14 @@ class App extends Component{
             <TableBody>
                 {this.state.customers ? this.state.customers.map(customer => 
                     (<Customer key={customer.id} id={customer.id} name={ customer.name} image={ customer.image } birthday={customer.birthday} gender={customer.gender} job={customer.job}/>))
-                : ""}
+                : 
+                <TableRow>
+                  <TableCell>
+                    <CircularProgress className={classes.progress} variant="determinate" value={this.state.complated}/>
+                  </TableCell>
+                </TableRow>
+                
+                }
             </TableBody>
         </Table>
       </Paper>
